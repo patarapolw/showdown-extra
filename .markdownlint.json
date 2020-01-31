@@ -1,0 +1,7 @@
+{
+  "no-inline-html": false,
+  "line-length": false,
+  "no-bare-urls": false,
+  "single-h1": false,
+  "no-missing-space-atx": false
+}

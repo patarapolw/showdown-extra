@@ -1,0 +1,35 @@
+{
+  "name": "showdown-extra",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/patarapolw/showdown-extra.git",
+  "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
+  "scripts": {
+    "start": "parcel web/index.pug --open",
+    "build:web": "parcel build web/index.pug web/showdown-extra.js --base-url /showdown-extra",
+    "deploy": "yarn build:web && touch dist/.nojekyll && gh-page -d dist"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "hyperpug": "^1.0.5",
+    "hyperscript": "^2.0.2",
+    "indent-utils": "^1.0.7",
+    "scope-css": "^1.2.1",
+    "shortid": "^2.2.15",
+    "showdown": "^1.9.1"
+  },
+  "devDependencies": {
+    "@types/codemirror": "^0.0.84",
+    "cssnano": "^4.1.10",
+    "eslint": ">=6.2.2",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": ">=2.18.0",
+    "eslint-plugin-node": ">=9.1.0",
+    "eslint-plugin-promise": ">=4.2.1",
+    "eslint-plugin-standard": ">=4.0.0",
+    "pug": "^2.0.4"
+  },
+  "optionalDependencies": {
+    "cheerio": "^1.0.0-rc.3"
+  }
+}
