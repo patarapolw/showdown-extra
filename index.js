@@ -61,6 +61,12 @@ class ShowdownExtra {
       showdown: {
         hyperpug: {
           type: 'lang',
+          filter: createIndentedFilter('hyperpug', (s) => {
+            return this._hyperpugParse(s)
+          })
+        },
+        inlineHyperpug: {
+          type: 'lang',
           regex: /(\\)?#\{([^}]+)\}/g,
           replace: (p0, p1, p2) => {
             return p1 ? p0 : this._hyperpugParse(p2)
@@ -74,6 +80,38 @@ class ShowdownExtra {
               src="https://www.youtube.com/embed/${s}"
               frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen></iframe>`)
+          })
+        },
+        spoiler: {
+          type: 'lang',
+          filter: createIndentedFilter('spoiler', (s, { summary }) => {
+            return h('details', {
+              style: {
+                'margin-bottom': '1rem'
+              }
+            }, [
+              h('summary', summary || 'spoiler'),
+              h('div', { innerHTML: s })
+            ]).outerHTML
+          })
+        },
+        blur: {
+          type: 'lang',
+          /**
+           * @param {string} s
+           * @param {showdown.Converter} conv
+           */
+          filter: createIndentedFilter('blur', (s) => {
+            return h('div', {
+              style: {
+                filter: 'blur(10px)'
+              },
+              attrs: {
+                onclick: 'this.style.filter = this.style.filter ? "" : this.getAttribute("data-filter")',
+                'data-filter': 'blur(10px)'
+              },
+              innerHTML: this.converter.makeHtml(s)
+            }).outerHTML
           })
         }
       },

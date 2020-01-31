@@ -3,5 +3,6 @@
   "line-length": false,
   "no-bare-urls": false,
   "single-h1": false,
-  "no-missing-space-atx": false
+  "no-missing-space-atx": false,
+  "code-block-style": false
 }

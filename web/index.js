@@ -37,4 +37,4 @@ function parse (s) {
 }
 
 editor.on('change', parse)
-editor.setValue(require('fs').readFileSync(`${__dirname}/../README.md`, 'utf8'))
+editor.setValue(require('fs').readFileSync(`${__dirname}/../example.md`, 'utf8'))

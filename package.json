@@ -6,8 +6,9 @@
   "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
   "scripts": {
     "start": "parcel web/index.pug --open",
-    "build:web": "parcel build web/index.pug web/showdown-extra.js --base-url /showdown-extra",
-    "deploy": "yarn build:web && touch dist/.nojekyll && gh-page -d dist"
+    "build:web": "rm -rf dist && parcel build web/index.pug web/showdown-extra.js --public-url /showdown-extra",
+    "deploy": "yarn build:web && touch dist/.nojekyll && gh-pages -d dist",
+    "clean": "rm -rf dist .cache"
   },
   "license": "MIT",
   "dependencies": {
