@@ -155,24 +155,16 @@ class ShowdownExtra {
       }
     } catch (e) {}
 
-    let output = this._finalizeHtml(this.lastHtml, this.lastMetadata)
+    return this.activate(this._finalizeHtml(this.lastHtml, this.lastMetadata))
+  }
 
-    if (typeof window === 'undefined') {
-      const cheerio = require('cheerio')
-      const $ = cheerio.load(output)
-
-      $('style').each((i, el) => {
-        const $el = $(el)
-        const html = $el.html().trim()
-
-        if (html) {
-          $el.html(scopeCss(html, `#${this.id}`))
-        }
-      })
-
-      output = this._finalizeHtml($('main').html(), this.lastMetadata)
-    } else {
-      const div = document.createElement('div')
+  /**
+   * Commit required changes for the browser, if not done yet.
+   * @param {string} output
+   */
+  activate (output) {
+    if (typeof window !== 'undefined') {
+      const div = document.getElementById(this.id) || document.createElement('div')
       div.innerHTML = output
 
       Array.from(div.getElementsByTagName('style')).forEach((el0) => {
@@ -183,7 +175,7 @@ class ShowdownExtra {
         }
       })
 
-      output = div.innerHTML
+      return div.innerHTML
     }
 
     return output
