@@ -4,15 +4,20 @@
   "main": "index.js",
   "repository": "https://github.com/patarapolw/showdown-extra.git",
   "author": "Pacharapol Withayasakpunt <patarapolw@gmail.com> (https://polvcode.dev)",
+  "files": [
+    "lib",
+    "src"
+  ],
   "scripts": {
     "start": "parcel web/index.pug --open",
-    "build:web": "rm -rf dist && parcel build web/index.pug web/showdown-extra.js --public-url /showdown-extra",
+    "prepare": "tsc -p src/tsconfig.json",
+    "build:web": "rm -rf dist && parcel build web/index.pug web/showdown-extra.ts --public-url /showdown-extra",
     "deploy": "yarn build:web && touch dist/.nojekyll && gh-pages -d dist",
     "clean": "rm -rf dist .cache"
   },
   "license": "MIT",
   "dependencies": {
-    "hyperpug": "^1.0.5",
+    "@patarapolw/eqdict": "^1.0.6",
     "hyperscript": "^2.0.2",
     "indent-utils": "^1.0.7",
     "scope-css": "^1.2.1",
@@ -21,6 +26,11 @@
   },
   "devDependencies": {
     "@types/codemirror": "^0.0.84",
+    "@types/hyperscript": "^0.0.3",
+    "@types/shortid": "^0.0.29",
+    "@types/showdown": "^1.9.3",
+    "@typescript-eslint/eslint-plugin": "^2.18.0",
+    "@typescript-eslint/parser": "^2.18.0",
     "cssnano": "^4.1.10",
     "eslint": ">=6.2.2",
     "eslint-config-standard": "^14.1.0",
@@ -28,6 +38,7 @@
     "eslint-plugin-node": ">=9.1.0",
     "eslint-plugin-promise": ">=4.2.1",
     "eslint-plugin-standard": ">=4.0.0",
-    "pug": "^2.0.4"
+    "pug": "^2.0.4",
+    "typescript": "^3.7.5"
   }
 }

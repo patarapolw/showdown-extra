@@ -1,5 +1,7 @@
 # showdown-extra
 
+My custom [Showdown.js](https://github.com/showdownjs/showdown) settings, with CSS support.
+
 For example, please see [/example.md](/example.md)
 
 ## Installation

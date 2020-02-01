@@ -5,10 +5,6 @@ numbers:
   - a-list: 1
 ---
 
-# showdown-extra
-
-My custom [Showdown.js](https://github.com/showdownjs/showdown) settings, with CSS and HyperPug support.
-
 ## Extended syntaxes
 
 These are options of Showdown.js, which I have enabled.
@@ -43,13 +39,9 @@ h1 {
   color: red;
 }
 
-.serif {
+.special pre code {
   font-family: serif;
-  text-transform: uppercase;
-}
-
-.serif h2 {
-  color: green;
+  color: red;
 }
 </style>
 
@@ -65,16 +57,17 @@ alert('hello')
 alert('hello')
 </script>
 
-#{span(style="color: green;") Pug-like syntax:} [HyperPug](https://github.com/patarapolw/hyperpug) is also supported, with `#{}`.
+Class wrapping is possible due to [https://github.com/showdownjs/showdown/wiki/Showdown's-Markdown-syntax#handling-html-in-markdown-documents](https://github.com/showdownjs/showdown/wiki/Showdown's-Markdown-syntax#handling-html-in-markdown-documents), please try
 
-For class wrapping, please try
+<markdown indent=2 class="special" style="color: purple;">
+  This is not indented.
 
-^^hyperpug.
-  .serif
-    :markdown
-      ## Might Be Yes
+    ## This is indented.
+</markdown>
 
-There is also `^^` syntax is powered by <https://github.com/patarapolw/indent-utils>.
+You can also declare inline CSS this way.
+
+The `^^` syntax is powered by <https://github.com/patarapolw/indent-utils>.
 
 ^^youtube 9xwazD5SyVg
 
@@ -82,8 +75,6 @@ There is also `^^` syntax is powered by <https://github.com/patarapolw/indent-ut
   ![Very NSFW Image](https://placeimg.com/640/480/any =300x*)
 
   Text is blurred too.
-
-For multiline spoiler, it is best told by this.
 
 ^^spoiler(summary="Aforementioned matter").
 
