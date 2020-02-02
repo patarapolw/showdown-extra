@@ -15,10 +15,10 @@ yarn add https://github.com/patarapolw/showdown-extra.git
 Or if you don't use Node.js or NPM
 
 ```html
-<script src="https://patarpolw.github.io/showdown-extra/showdown-extra.js"></script>
+<script src="https://patarapolw.github.io/showdown-extra/showdown-extra.js"></script>
 ```
 
-Now, `ShowdownExtra` will be available as a global variable.
+Now, `ShowdownExtra` will be available as a global variable. (It must be imported if used as Node.js module.)
 
 After that,
 
