@@ -17,6 +17,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@patarapolw/eqdict": "^1.0.6",
     "dompurify": "^2.0.7",
     "escape-string-regexp": "^2.0.0",
     "hyperscript": "^2.0.2",

@@ -62,14 +62,14 @@ Class wrapping is possible due to [https://github.com/showdownjs/showdown/wiki/S
 <markdown indent=2 class="special" style="color: purple;">
   ## This is not indented.
 
-    ## This is indented.
+      ## This is indented.
 </markdown>
 
 You can also declare inline CSS this way.
 
-By default, Markdown is sanitized, Youtube and Blur has to be done by custom tags.
+By default, Markdown is sanitized, Youtube and Blur has to be done by custom tags, either via `{% %}` (single line) or `<...>` (multiple lines).
 
-^^youtube 9xwazD5SyVg
+{% youtube 9xwazD5SyVg %}
 
 <blur>
 ![Very NSFW Image](https://placeimg.com/640/480/any =300x*)
@@ -81,7 +81,7 @@ Text is blurred too.
 
 The question still remains, how do I add **spoiler**?
 
-This is a standard HTML feature, use `<details>`,
+- This is a standard HTML feature, just use `<details>`,
 
 <details>
   <summary>Aforementioned matter</summary>

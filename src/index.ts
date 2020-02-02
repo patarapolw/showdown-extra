@@ -2,9 +2,10 @@ import showdown from 'showdown'
 import scopeCss from 'scope-css'
 import shortid from 'shortid'
 import h from 'hyperscript'
-import { stripIndent, createIndentedFilter } from 'indent-utils'
+import { stripIndent } from 'indent-utils'
 import createDOMPurify from 'dompurify'
 import escapeRegExp from 'escape-string-regexp'
+import eqdict from '@patarapolw/eqdict'
 
 const ext: Record<string, showdown.ShowdownExtension> = {}
 
@@ -62,16 +63,48 @@ export default class ShowdownExtra {
     this.ext = {
       youtube: {
         type: 'lang',
-        filter: createIndentedFilter('youtube', (s, { width, height }) => {
-          return h('div', {
-            attrs: {
-              [`data-${this.id}`]: MarkdownEscape.escape(`<iframe width="${width || 560}" height="${height || 315}"
-              src="https://www.youtube.com/embed/${s}"
-              frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen></iframe>`)
+        filter: (s) => {
+          return s.replace(/\{% youtube(?:\(([)]+)\))? (.+) %\}/g, (all, attrs: string, url: string) => {
+            let width: number | null = null
+            let height: number | null = null
+
+            if (attrs) {
+              const d = attrs.split(',').map((el) => parseInt(el))
+              if (d.every((el) => el) && d.length === 2) {
+                width = d[0]
+                height = d[1]
+              }
+
+              if (!width || !height) {
+                const dict = eqdict(attrs)
+                width = parseInt(dict.width)
+                height = parseInt(dict.height)
+              }
             }
-          }).outerHTML
-        })
+
+            try {
+              url = (() => {
+                const u = new URL(url)
+                const v = u.searchParams.get('v')
+
+                if (v) {
+                  return v
+                }
+
+                return u.pathname.replace(/$.*\//, '')
+              })()
+            } catch (e) {}
+
+            return h('div', {
+              attrs: {
+                [`data-${this.id}`]: MarkdownEscape.escape(`<iframe width="${width || 560}" height="${height || 315}"
+                src="https://www.youtube.com/embed/${url}"
+                frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>`)
+              }
+            }).outerHTML
+          })
+        }
       }
     }
 
@@ -192,8 +225,13 @@ export default class ShowdownExtra {
 
   _minparseMarkdown (s: string) {
     return s
-      .replace(/^.*(?:^|[^`])`([^`]+?)`(?:$|[^`]).*$/g, (s) => this.converter.makeHtml(s))
-      .replace(/(?:^|\n)```[a-z]+?\n.*?```(?:\n|$)/gsi, (s) => this.converter.makeHtml(s))
+      .replace(/(?:^|\n)```[a-z]+?\n.*?```(?:\n|$)/gsi, (s0) => this.converter.makeHtml(s0))
+      .split('\n').map((s0) => {
+        if (/`{1}[^`]+`{1}/.test(s0)) {
+          return this.converter.makeHtml(s0)
+        }
+        return s0
+      }).join('\n')
       .replace(/^.*<[^>]+>.*$/g, (s) => {
         const m = s.match(/<[^>]+>/g)
         if (m && m.some((el) => el.includes('://'))) {
