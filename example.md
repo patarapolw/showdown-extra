@@ -22,7 +22,7 @@ These are options of Showdown.js, which I have enabled.
 
 ## Custom syntaxes
 
-These are supported, unlike <https://github.com/patarapolw/showdown-extra/tree/master/example.md> (Please view on GitHub to see differences.)
+These are supported, unlike [https://github.com/patarapolw/showdown-extra/tree/master/example.md](https://github.com/patarapolw/showdown-extra/tree/master/example.md) (Please view on GitHub to see differences.)
 
 CSS is supported, but is scoped to prevent leakage.
 
@@ -60,29 +60,39 @@ alert('hello')
 Class wrapping is possible due to [https://github.com/showdownjs/showdown/wiki/Showdown's-Markdown-syntax#handling-html-in-markdown-documents](https://github.com/showdownjs/showdown/wiki/Showdown's-Markdown-syntax#handling-html-in-markdown-documents), please try
 
 <markdown indent=2 class="special" style="color: purple;">
-  This is not indented.
+  ## This is not indented.
 
     ## This is indented.
 </markdown>
 
 You can also declare inline CSS this way.
 
-The `^^` syntax is powered by <https://github.com/patarapolw/indent-utils>.
+By default, Markdown is sanitized, Youtube and Blur has to be done by custom tags.
 
 ^^youtube 9xwazD5SyVg
 
-^^blur.
-  ![Very NSFW Image](https://placeimg.com/640/480/any =300x*)
+<blur>
+![Very NSFW Image](https://placeimg.com/640/480/any =300x*)
+  
+Text is blurred too.
+</blur>
 
-  Text is blurred too.
+## Standard HTML features
 
-^^spoiler(summary="Aforementioned matter").
+The question still remains, how do I add **spoiler**?
 
-  Something else
+This is a standard HTML feature, use `<details>`,
 
-  ```yaml
-  title: Awesome front matter
-  isCool: true
-  numbers:
-    - a-list: 1
-  ```
+<details>
+  <summary>Aforementioned matter</summary>
+  <markdown>
+    Something else
+
+    ```yaml
+    title: Awesome front matter
+    isCool: true
+    numbers:
+      - a-list: 1
+    ```
+  </markdown>
+</details>

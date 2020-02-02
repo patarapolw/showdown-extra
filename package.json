@@ -10,14 +10,15 @@
   ],
   "scripts": {
     "start": "parcel web/index.pug --open",
-    "prepare": "tsc -p src/tsconfig.json",
+    "prepack": "tsc -p src/tsconfig.json",
     "build:web": "rm -rf dist && parcel build web/index.pug web/showdown-extra.ts --public-url /showdown-extra",
     "deploy": "yarn build:web && touch dist/.nojekyll && gh-pages -d dist",
     "clean": "rm -rf dist .cache"
   },
   "license": "MIT",
   "dependencies": {
-    "@patarapolw/eqdict": "^1.0.6",
+    "dompurify": "^2.0.7",
+    "escape-string-regexp": "^2.0.0",
     "hyperscript": "^2.0.2",
     "indent-utils": "^1.0.7",
     "scope-css": "^1.2.1",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@types/codemirror": "^0.0.84",
+    "@types/dompurify": "^2.0.1",
     "@types/hyperscript": "^0.0.3",
     "@types/shortid": "^0.0.29",
     "@types/showdown": "^1.9.3",

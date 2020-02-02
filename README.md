@@ -31,6 +31,10 @@ document.getElementById('output').innerHTML = showdownExtra.parse('# Awesome str
 
 For more settings and default options, see <https://github.com/patarapolw/showdown-extra/tree/master/index.js>
 
+## Caution for Node.js users
+
+HTML sanitization and custom tags is done through DOM. If you need to output HTML for Node.js, you will need [global-jsdom](https://www.npmjs.com/package/global-jsdom) or [jsdom-global](https://github.com/rstacruz/jsdom-global); otherwise, `showdownExtra.parse` will not run.
+
 ## Contributions
 
 Please either open an [issue](https://github.com/patarapolw/showdown-extra/issues), or fork the project and make pull requests.

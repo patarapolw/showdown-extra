@@ -2,8 +2,9 @@ import showdown from 'showdown'
 import scopeCss from 'scope-css'
 import shortid from 'shortid'
 import h from 'hyperscript'
-import { createIndentedFilter, stripIndent } from 'indent-utils'
-import eqdict from '@patarapolw/eqdict'
+import { stripIndent, createIndentedFilter } from 'indent-utils'
+import createDOMPurify from 'dompurify'
+import escapeRegExp from 'escape-string-regexp'
 
 const ext: Record<string, showdown.ShowdownExtension> = {}
 
@@ -56,59 +57,21 @@ export default class ShowdownExtra {
       this.converter.setFlavor(flavor)
     }
 
+    this.converter.setOption('simpleLineBreaks', false)
+
     this.ext = {
       youtube: {
         type: 'lang',
-        filter: createIndentedFilter('youtube', (s) => {
-          return stripIndent(`
-          <iframe width="560" height="315" 
-            src="https://www.youtube.com/embed/${s}"
-            frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen></iframe>`)
-        })
-      },
-      spoiler: {
-        type: 'lang',
-        filter: createIndentedFilter('spoiler', (s, { summary }) => {
-          return h('details', {
-            style: {
-              'margin-bottom': '1rem'
-            }
-          }, [
-            h('summary', summary || 'spoiler'),
-            h('div', { innerHTML: s })
-          ]).outerHTML
-        })
-      },
-      blur: {
-        type: 'lang',
-        filter: createIndentedFilter('blur', (s) => {
+        filter: createIndentedFilter('youtube', (s, { width, height }) => {
           return h('div', {
-            style: {
-              filter: 'blur(10px)'
-            },
             attrs: {
-              onclick: 'this.style.filter = this.style.filter ? "" : this.getAttribute("data-filter")',
-              'data-filter': 'blur(10px)'
-            },
-            innerHTML: this.converter.makeHtml(s)
+              [`data-${this.id}`]: MarkdownEscape.escape(`<iframe width="${width || 560}" height="${height || 315}"
+              src="https://www.youtube.com/embed/${s}"
+              frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>`)
+            }
           }).outerHTML
         })
-      },
-      markdown: {
-        type: 'lang',
-        regex: /<markdown([^>]*)>(.*?)<\/markdown>/gsi,
-        replace: (p0: string, p1: string, p2: string) => {
-          const attrs = eqdict(p1.trim())
-          const indentRegex = attrs.indent ? new RegExp(`^ {1, ${parseInt(attrs.indent)}}`) : null
-          const innerHTML = p2.replace(/^\n/, '').replace(/\n$/, '')
-
-          return `<div data-markdown ${p1}>${
-            indentRegex === null
-              ? stripIndent(innerHTML)
-              : innerHTML.split('\n').map((line) => line.replace(indentRegex, '')).join('\n')
-          }</div>`
-        }
       }
     }
 
@@ -123,43 +86,91 @@ export default class ShowdownExtra {
   }
 
   parse (s: string): string {
-    try {
-      this.lastHtml = this.converter.makeHtml(s)
-      const m = this.converter.getMetadata(true)
-      this.lastMetadata = {
-        value: typeof m === 'string' ? m : JSON.stringify(m),
-        type: this.converter.getMetadataFormat()
-      }
-    } catch (e) {}
+    this.lastHtml = this._parseMarkdownOnly(s)
 
-    return this.activate(this._finalizeHtml(this.lastHtml, this.lastMetadata))
-  }
-
-  activate (output: string): string {
-    if (typeof window !== 'undefined') {
-      const div = document.getElementById(this.id) || document.createElement('div')
-      div.innerHTML = output
-
-      Array.from(div.getElementsByTagName('style')).forEach((el0) => {
-        const html = el0.innerHTML.trim()
-
-        if (html) {
-          el0.innerHTML = scopeCss(html, `#${this.id}`)
-        }
-      })
-
-      Array.from(div.getElementsByTagName('script')).forEach((el0) => {
-        el0.remove()
-      })
-
-      Array.from(div.getElementsByTagName('link')).forEach((el0) => {
-        el0.remove()
-      })
-
-      return div.innerHTML
+    const m = this.converter.getMetadata(true)
+    this.lastMetadata = {
+      value: typeof m === 'string' ? m : JSON.stringify(m),
+      type: this.converter.getMetadataFormat()
     }
 
-    return output
+    s = this._finalizeHtml(this.lastHtml, this.lastMetadata)
+
+    const DOMPurify = createDOMPurify(window)
+
+    const div = DOMPurify.sanitize(s, {
+      RETURN_DOM: true
+    })
+
+    Array.from(div.getElementsByTagName('style')).forEach((el0) => {
+      const html = el0.innerHTML.trim()
+
+      if (html) {
+        el0.innerHTML = scopeCss(html, `#${this.id}`)
+      }
+    })
+
+    div.querySelectorAll(`[data-${this.id}]`).forEach((el) => {
+      el.innerHTML = MarkdownEscape.unescape(el.getAttribute(`data-${this.id}`) || '')
+      el.removeAttribute(`data-${this.id}`)
+    })
+
+    return div.innerHTML
+  }
+
+  _parseMarkdownOnly (s: string) {
+    const root = document.createElement('body')
+    root.innerHTML = this._minparseMarkdown(s)
+
+    Array.from(root.getElementsByTagName('markdown')).forEach((el) => {
+      el.replaceWith(h('div', {
+        attrs: {
+          ...Array.from(el.attributes).reduce((prev, a) => ({ ...prev, [a.name]: a.value }), {}),
+          markdown: '1'
+        },
+        innerHTML: el.innerHTML
+      }))
+    })
+
+    const filter = 'blur(10px)'
+
+    Array.from(root.getElementsByTagName('blur')).forEach((el) => {
+      el.replaceWith(h('div', {
+        attrs: {
+          [`data-${this.id}`]: MarkdownEscape.escape(h('div', {
+            style: {
+              filter
+            },
+            attrs: {
+              onclick: `this.style.filter = this.style.filter ? "" : "${filter}"`
+            },
+            innerHTML: this._parseMarkdownOnly(el.innerHTML)
+          }).outerHTML)
+        }
+      }))
+    })
+
+    root.querySelectorAll('[markdown], [data-markdown]').forEach((el) => {
+      const indent = el.getAttribute('indent')
+      if (indent === null) {
+        const innerHTML = el.innerHTML.replace(/^\n/, '').replace(/\n$/, '')
+        el.innerHTML = stripIndent(innerHTML)
+      }
+    })
+
+    root.querySelectorAll('[indent]').forEach((el) => {
+      const indent = el.getAttribute('indent')
+      const indentRegex = indent ? new RegExp(`^ {1,${parseInt(indent)}}`) : null
+      const innerHTML = el.innerHTML.replace(/^\n/, '').replace(/\n$/, '')
+      el.innerHTML = indentRegex === null
+        ? stripIndent(innerHTML)
+        : innerHTML.split('\n').map((line) => line.replace(indentRegex, '')).join('\n')
+      el.removeAttribute('indent')
+    })
+
+    s = root.innerHTML
+
+    return this.converter.makeHtml(s)
   }
 
   _finalizeHtml (s: string, metadata: {
@@ -177,5 +188,65 @@ export default class ShowdownExtra {
       ] : []),
       h('main', { innerHTML: s })
     ]).outerHTML
+  }
+
+  _minparseMarkdown (s: string) {
+    return s
+      .replace(/^.*(?:^|[^`])`([^`]+?)`(?:$|[^`]).*$/g, (s) => this.converter.makeHtml(s))
+      .replace(/(?:^|\n)```[a-z]+?\n.*?```(?:\n|$)/gsi, (s) => this.converter.makeHtml(s))
+      .replace(/^.*<[^>]+>.*$/g, (s) => {
+        const m = s.match(/<[^>]+>/g)
+        if (m && m.some((el) => el.includes('://'))) {
+          return this.converter.makeHtml(s)
+        }
+        return s
+      })
+  }
+}
+
+const MarkdownEscape = {
+  controlChars: [
+    '\\',
+    '`',
+    '*',
+    '{',
+    '}',
+    '[',
+    ']',
+    '(',
+    ')',
+    '#',
+    '+',
+    '-',
+    '.',
+    '!',
+    '_',
+    '>',
+    '~', '|',
+    '\n',
+    '"',
+    '$',
+    '%',
+    '&',
+    "'",
+    ',',
+    '/',
+    ':',
+    ';',
+    '<',
+    '=',
+    '?',
+    '@',
+    '^'
+  ],
+  escape (s: string) {
+    return s.replace(new RegExp(`(${
+      this.controlChars.map((c) => escapeRegExp(c)).join('|')
+    })`, 'g'), '\\$1')
+  },
+  unescape (s: string) {
+    return s.replace(new RegExp(`(${
+      this.controlChars.map((c) => `\\\\${escapeRegExp(c)}`).join('|')
+    })`, 'g'), (_, p1) => p1.substr(1))
   }
 }
